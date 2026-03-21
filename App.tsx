@@ -9,6 +9,10 @@ import Services from './pages/Services';
 import ServiceDetail from './pages/ServiceDetail';
 import Testimonials from './pages/Testimonials';
 import Contact from './pages/Contact';
+<<<<<<< HEAD
+=======
+import AIAssistant from './components/AIAssistant';
+>>>>>>> 40193b5dc3b4a1d8c1ed15e3d9823b660efa7157
 import FloatingCTA from './components/FloatingCTA';
 
 // Scroll to top on route change
@@ -29,6 +33,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </div>
       <Footer />
       <FloatingCTA />
+<<<<<<< HEAD
+=======
+      <AIAssistant />
+>>>>>>> 40193b5dc3b4a1d8c1ed15e3d9823b660efa7157
     </div>
   );
 };

@@ -9,6 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@google/genai": "^1.38.0",
+>>>>>>> 40193b5dc3b4a1d8c1ed15e3d9823b660efa7157
     "lucide-react": "^0.563.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
