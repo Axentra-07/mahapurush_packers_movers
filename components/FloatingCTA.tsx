@@ -5,7 +5,7 @@ import { WHATSAPP } from '../constants';
 
 const FloatingCTA: React.FC = () => {
   return (
-    <div className="fixed bottom-24 right-6 z-[60] group">
+    <div className="fixed bottom-6 right-6 z-[60] group">
       <div className="absolute right-16 bottom-1 bg-white px-4 py-2 rounded-lg shadow-xl border border-gray-100 text-sm font-bold text-gray-700 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
         Chat with us on WhatsApp
       </div>
