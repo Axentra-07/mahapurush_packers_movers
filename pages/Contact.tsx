@@ -3,6 +3,7 @@ import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from 'lucide-react';
 import { ADDRESS, PHONE, EMAIL, WHATSAPP } from '../constants';
 
 const Contact: React.FC = () => {
+  const today = new Date().toISOString().split('T')[0];
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -39,8 +40,7 @@ const Contact: React.FC = () => {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) return 'Enter a valid email address.';
         return '';
       case 'message':
-        if (!trimmedValue) return 'Message is required.';
-        if (trimmedValue.length < 10) return 'Message must be at least 10 characters.';
+        if (trimmedValue && trimmedValue.length < 10) return 'Message must be at least 10 characters if provided.';
         return '';
       default:
         return '';
@@ -92,7 +92,7 @@ const Contact: React.FC = () => {
 Name: ${formData.name.trim()}
 Phone: ${formData.phone.trim()}
 Email: ${formData.email.trim()}
-Message: ${formData.message.trim()}`;
+Message: ${formData.message.trim() || 'N/A'}`;
 
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
     window.open(whatsappURL, '_blank');
@@ -154,7 +154,7 @@ Message: ${formData.message.trim()}`;
                   </div>
                   <div>
                     <h4 className="text-xl font-bold text-primary-900 mb-2">Business Hours</h4>
-                    <p className="text-gray-600 font-medium">Monday â€“ Sunday: 9:00 AM â€“ 8:00 PM</p>
+                    <p className="text-gray-600 font-medium">Monday - Sunday: 9:00 AM - 8:00 PM</p>
                     <p className="text-xs text-primary-600 mt-1 uppercase font-bold tracking-widest">Always on for emergencies</p>
                   </div>
                 </div>
@@ -251,6 +251,7 @@ Message: ${formData.message.trim()}`;
                     <label className="block text-sm font-bold text-primary-900 mb-2">Move Date</label>
                     <input
                       type="date"
+                      min={today}
                       className="w-full bg-white border border-gray-200 px-5 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm"
                       value={formData.date}
                       onChange={(e) => handleChange('date', e.target.value)}
@@ -261,7 +262,6 @@ Message: ${formData.message.trim()}`;
                 <div>
                   <label className="block text-sm font-bold text-primary-900 mb-2">Message</label>
                   <textarea
-                    required
                     rows={5}
                     placeholder="Tell us about your moving requirement."
                     className="w-full resize-none bg-white border border-gray-200 px-5 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all shadow-sm"
