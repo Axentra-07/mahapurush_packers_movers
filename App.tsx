@@ -9,6 +9,8 @@ import Services from './pages/Services';
 import ServiceDetail from './pages/ServiceDetail';
 import Testimonials from './pages/Testimonials';
 import Contact from './pages/Contact';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 import FloatingCTA from './components/FloatingCTA';
 
 // Scroll to top on route change
@@ -45,6 +47,8 @@ const App: React.FC = () => {
           <Route path="/services/:id" element={<ServiceDetail />} />
           <Route path="/testimonials" element={<Testimonials />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
         </Routes>
       </Layout>
     </HashRouter>

@@ -16,10 +16,10 @@ import { Service, Testimonial, FAQ } from './types';
 
 export const COMPANY_NAME = "Mahapurush Packers and Movers";
 export const ADDRESS = "House No. B/1714, Rasalwadi, Near Bus Stop, Nachane Road, Shanti Nagar, Ratnagiri – 415639, Maharashtra";
-export const PHONE = "+91 93071 85610";
+export const PHONE = "+91 96893 95868";
 
-export const EMAIL = "contact@mahapurushpackers.com";
-export const WHATSAPP = "+919307185610";
+export const EMAIL = "mahapurushpackersandmovers08@gmail.com";
+export const WHATSAPP = "919689395868";
 
 
 export const SERVICES: Service[] = [
