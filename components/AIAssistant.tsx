@@ -1,19 +1,60 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { Bot, Loader2, MessageSquare, Send, X } from 'lucide-react';
+import { ADDRESS, COMPANY_NAME, EMAIL, PHONE, SERVICES, WHATSAPP } from '../constants';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
-import { MessageSquare, Send, X, Bot, Loader2 } from 'lucide-react';
+type ChatRole = 'user' | 'assistant';
+
+type ChatMessage = {
+  role: ChatRole;
+  text: string;
+};
+
+const CHAT_API_URL = '/api/chat';
+const SYSTEM_PROMPT = `You are a helpful assistant for ${COMPANY_NAME} in Ratnagiri, Maharashtra.
+Answer in a friendly, concise, practical tone.
+Help with packing, household shifting, office relocation, vehicle transport, fragile item handling, and service questions.
+If asked about pricing, explain that costs depend on distance, volume, and service type, and direct the user to contact the company for a custom quote.
+Use these contact details when relevant:
+Phone: ${PHONE}
+WhatsApp: ${WHATSAPP}
+Email: ${EMAIL}
+Address: ${ADDRESS}
+Do not mention policies, coding, or internal implementation details.`;
+
+const buildFallbackReply = (message: string) => {
+  const text = message.toLowerCase();
+
+  if (text.includes('price') || text.includes('cost') || text.includes('quote') || text.includes('charge')) {
+    return `Pricing depends on the move size and distance. Please call ${PHONE} or WhatsApp ${WHATSAPP} for a custom quote.`;
+  }
+
+  if (text.includes('phone') || text.includes('contact') || text.includes('number') || text.includes('reach')) {
+    return `You can reach ${COMPANY_NAME} at ${PHONE}, WhatsApp ${WHATSAPP}, or email ${EMAIL}.`;
+  }
+
+  if (text.includes('address') || text.includes('location') || text.includes('office')) {
+    return `Our office address is ${ADDRESS}.`;
+  }
+
+  if (text.includes('car') || text.includes('bike') || text.includes('vehicle')) {
+    return 'Yes, we provide car and bike transportation with careful loading and transit support.';
+  }
+
+  if (text.includes('fragile') || text.includes('glass') || text.includes('electronics') || text.includes('tv')) {
+    return 'For fragile items, we use layered packing and cushioning to reduce damage risk.';
+  }
+
+  return `I can help with services, packing, vehicle transport, and contact details. We also handle ${SERVICES[0].title.toLowerCase()}.`;
+};
 
 const AIAssistant: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([
-    { role: 'model', text: 'Hi! I am Mahapurush Moving Assistant. How can I help you plan your move today?' }
-  ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: 'assistant', text: 'Hi! I am Mahapurush Moving Assistant. How can I help you today?' },
+  ]);
   const scrollRef = useRef<HTMLDivElement>(null);
-  
-  // Ref to persist the chat session across re-renders
-  const chatSessionRef = useRef<any>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -25,131 +66,123 @@ const AIAssistant: React.FC = () => {
     if (!input.trim() || isLoading) return;
 
     const userMsg = input.trim();
+    const nextMessages = [...messages, { role: 'user', text: userMsg }];
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setMessages(nextMessages);
     setIsLoading(true);
 
     try {
-      // Lazy initialization of the AI client and Chat session
-      if (!chatSessionRef.current) {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-        chatSessionRef.current = ai.chats.create({
-          model: 'gemini-3-flash-preview',
-          config: {
-            systemInstruction: `You are an expert moving consultant for 'Mahapurush Packers and Movers' in Ratnagiri, Maharashtra. 
-            Provide helpful, professional advice about packing, moving fragile items, relocation checklists, and vehicle transport. 
-            Keep answers concise and friendly. If users ask about specific prices, tell them to visit our Contact page or call us for a custom quote.
-            Our address: House No. B/1714, Rasalwadi, Near Bus Stop, Nachane Road, Shanti Nagar, Ratnagiri.
-            Focus on damage-free shifting and customer trust.`,
-          },
-        });
+      const response = await fetch(CHAT_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: nextMessages.slice(-8),
+          systemPrompt: SYSTEM_PROMPT,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Chat request failed: ${response.status} ${errorText}`);
       }
 
-      // Send message using the stateful chat session
-      const result = await chatSessionRef.current.sendMessage({ message: userMsg });
-      
-      const botText = result.text || "I'm sorry, I couldn't process that. Please try again or call us directly.";
-      setMessages(prev => [...prev, { role: 'model', text: botText }]);
-    } catch (error: any) {
-      console.error("AI Assistant Error:", error);
-      
-      let errorMessage = "I'm having a bit of trouble connecting to my moving database. Please feel free to call us directly for immediate help!";
-      
-      // Handle specific API key or auth issues gracefully
-      if (error.message?.includes('API_KEY') || error.message?.includes('403') || error.message?.includes('401')) {
-        errorMessage = "The moving assistant service is currently unavailable. Please contact us via phone or WhatsApp for assistance.";
-      }
+      const data = await response.json();
+      const reply = data?.reply?.trim() || buildFallbackReply(userMsg);
 
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        text: errorMessage
-      }]);
-      
-      // Reset chat session on error to allow a fresh start if it was a session-specific error
-      chatSessionRef.current = null;
+      setMessages(prev => [...prev, { role: 'assistant', text: reply }]);
+    } catch (error) {
+      console.error('Chatbot error:', error);
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'assistant',
+          text: buildFallbackReply(userMsg),
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end">
-      {isOpen && (
-        <div className="bg-white w-80 sm:w-96 h-[500px] shadow-2xl rounded-3xl mb-4 flex flex-col overflow-hidden border border-brandGray animate-in slide-in-from-bottom-5 duration-300">
-          {/* Header */}
-          <div className="bg-primary-500 p-4 flex justify-between items-center text-white">
+    <div className="fixed bottom-6 right-6 z-[70] flex flex-col items-end">
+      {open && (
+        <div className="mb-4 flex h-[500px] w-80 flex-col overflow-hidden rounded-2xl border border-brandGray bg-white shadow-2xl sm:w-96">
+          <div className="flex items-center justify-between bg-primary-500 p-4 text-white">
             <div className="flex items-center gap-3">
-              <div className="bg-cta p-2 rounded-lg text-primary-900 shadow-md">
-                <Bot className="w-5 h-5" />
+              <div className="rounded-lg bg-cta p-2 text-primary-900 shadow-md">
+                <Bot className="h-5 w-5" />
               </div>
               <div>
                 <p className="font-bold leading-none">Moving Assistant</p>
-                <p className="text-[10px] text-cta uppercase tracking-widest mt-1 font-extrabold">Expert Help</p>
+                <p className="mt-1 text-[10px] font-extrabold uppercase tracking-widest text-cta">Groq powered</p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsOpen(false)} 
-              className="hover:bg-white/10 p-1 rounded-full transition-colors"
+            <button
+              onClick={() => setOpen(false)}
+              className="rounded-full p-1 transition-colors hover:bg-white/10"
               aria-label="Close assistant"
             >
-              <X className="w-5 h-5" />
+              <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-brandGray/30 no-scrollbar">
-            {messages.map((m, i) => (
-              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] p-3 rounded-2xl text-sm shadow-sm font-medium ${
-                  m.role === 'user' 
-                    ? 'bg-primary-500 text-white rounded-tr-none' 
-                    : 'bg-white text-textMain rounded-tl-none border border-brandGray'
-                }`}>
-                  {m.text}
+          <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto bg-brandGray/30 p-4 no-scrollbar">
+            {messages.map((message, index) => (
+              <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-[85%] rounded-2xl p-3 text-sm font-medium shadow-sm ${
+                    message.role === 'user'
+                      ? 'rounded-tr-none bg-primary-500 text-white'
+                      : 'rounded-tl-none border border-brandGray bg-white text-textMain'
+                  }`}
+                >
+                  {message.text}
                 </div>
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-white p-3 rounded-2xl shadow-sm border border-brandGray flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-cta animate-spin" />
-                  <span className="text-xs text-textMuted font-bold italic">Planning your move...</span>
+                <div className="flex items-center gap-2 rounded-2xl border border-brandGray bg-white p-3 shadow-sm">
+                  <Loader2 className="h-4 w-4 animate-spin text-cta" />
+                  <span className="text-xs font-bold italic text-textMuted">Planning your move...</span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Input */}
-          <div className="p-4 bg-white border-t border-brandGray">
+          <div className="border-t border-brandGray bg-white p-4">
             <div className="flex gap-2">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Ask about packing fragile items..."
-                className="flex-1 bg-brandGray border-brandGray rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-cta focus:outline-none font-medium text-primary-900"
+                placeholder="Ask about packing or transport..."
+                className="flex-1 rounded-xl border border-brandGray bg-brandGray px-4 py-2 text-sm font-medium text-primary-900 focus:outline-none focus:ring-2 focus:ring-cta"
                 disabled={isLoading}
               />
-              <button 
+              <button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
-                className="bg-cta text-primary-900 p-2 rounded-xl hover:bg-cta-hover transition-colors disabled:opacity-50 shadow-md flex-shrink-0"
+                className="flex-shrink-0 rounded-xl bg-cta p-2 text-primary-900 shadow-md transition-colors hover:bg-cta-hover disabled:opacity-50"
                 aria-label="Send message"
               >
-                <Send className="w-5 h-5" />
+                <Send className="h-5 w-5" />
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
-        className="bg-primary-500 text-cta p-4 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all animate-bounce-slow border-2 border-white"
-        aria-label={isOpen ? "Close Assistant" : "Open Assistant"}
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="rounded-full border-2 border-white bg-primary-500 p-4 text-cta shadow-2xl transition-all hover:scale-110 active:scale-95"
+        aria-label={open ? 'Close Assistant' : 'Open Assistant'}
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
+        {open ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
       </button>
     </div>
   );

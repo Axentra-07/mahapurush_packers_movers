@@ -12,6 +12,7 @@ import Contact from './pages/Contact';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import FloatingCTA from './components/FloatingCTA';
+import AIAssistant from './components/AIAssistant';
 
 // Scroll to top on route change
 const ScrollToTop = () => {
@@ -31,6 +32,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </div>
       <Footer />
       <FloatingCTA />
+      <AIAssistant />
     </div>
   );
 };
