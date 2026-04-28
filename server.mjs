@@ -6,6 +6,7 @@ const PORT = Number(process.env.PORT || 8787);
 const ENV_PATHS = [resolve('.env.local'), resolve('.env')];
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.1-8b-instant';
+const MAX_REPLY_LINES = 5;
 
 function loadEnvValue(name) {
   if (process.env[name]) {
@@ -68,6 +69,27 @@ function buildMessages(systemPrompt, messages) {
   ];
 }
 
+function formatReply(text) {
+  const normalized = String(text || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  if (!normalized) return '';
+
+  const sentences = normalized
+    .split(/(?<=[.!?])\s+/)
+    .map(sentence => sentence.trim())
+    .filter(Boolean);
+
+  const limited = (sentences.length ? sentences : [normalized])
+    .slice(0, MAX_REPLY_LINES)
+    .join('\n');
+
+  return limited.length > 420 ? `${limited.slice(0, 417).trimEnd()}...` : limited;
+}
+
 const server = createServer(async (request, response) => {
   if (request.method === 'OPTIONS') {
     response.writeHead(204, {
@@ -117,7 +139,7 @@ const server = createServer(async (request, response) => {
       return;
     }
 
-    const reply = payload?.choices?.[0]?.message?.content || '';
+    const reply = formatReply(payload?.choices?.[0]?.message?.content || '');
     jsonResponse(response, 200, { reply, raw: payload });
   } catch (error) {
     jsonResponse(response, 500, {

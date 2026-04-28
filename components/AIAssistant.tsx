@@ -12,6 +12,8 @@ type ChatMessage = {
 const CHAT_API_URL = '/api/chat';
 const SYSTEM_PROMPT = `You are a helpful assistant for ${COMPANY_NAME} in Ratnagiri, Maharashtra.
 Answer in a friendly, concise, practical tone.
+Keep every reply to 4 or 5 short lines maximum.
+Use plain language and answer directly.
 Help with packing, household shifting, office relocation, vehicle transport, fragile item handling, and service questions.
 If asked about pricing, explain that costs depend on distance, volume, and service type, and direct the user to contact the company for a custom quote.
 Use these contact details when relevant:
@@ -107,16 +109,16 @@ const AIAssistant: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[70] flex flex-col items-end">
+    <div className="fixed bottom-4 left-4 right-4 z-[70] flex flex-col items-end sm:bottom-6 sm:left-auto sm:right-6">
       {open && (
-        <div className="mb-4 flex h-[500px] w-80 flex-col overflow-hidden rounded-2xl border border-brandGray bg-white shadow-2xl sm:w-96">
-          <div className="flex items-center justify-between bg-primary-500 p-4 text-white">
+        <div className="mb-3 flex h-[min(72vh,32rem)] w-full max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-brandGray bg-white shadow-2xl sm:h-[500px] sm:w-96">
+          <div className="flex items-center justify-between bg-primary-500 p-3 text-white sm:p-4">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-cta p-2 text-primary-900 shadow-md">
-                <Bot className="h-5 w-5" />
+                <Bot className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
-                <p className="font-bold leading-none">Moving Assistant</p>
+                <p className="text-sm font-bold leading-none sm:text-base">Moving Assistant</p>
                 <p className="mt-1 text-[10px] font-extrabold uppercase tracking-widest text-cta">Groq powered</p>
               </div>
             </div>
@@ -129,15 +131,16 @@ const AIAssistant: React.FC = () => {
             </button>
           </div>
 
-          <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto bg-brandGray/30 p-4 no-scrollbar">
+          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-brandGray/30 p-3 no-scrollbar sm:space-y-4 sm:p-4">
             {messages.map((message, index) => (
               <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[85%] rounded-2xl p-3 text-sm font-medium shadow-sm ${
+                  className={`max-w-[90%] rounded-2xl px-3 py-2 text-[13px] font-medium leading-relaxed shadow-sm sm:max-w-[85%] sm:p-3 sm:text-sm ${
                     message.role === 'user'
                       ? 'rounded-tr-none bg-primary-500 text-white'
                       : 'rounded-tl-none border border-brandGray bg-white text-textMain'
                   }`}
+                  style={{ whiteSpace: 'pre-line' }}
                 >
                   {message.text}
                 </div>
@@ -145,7 +148,7 @@ const AIAssistant: React.FC = () => {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="flex items-center gap-2 rounded-2xl border border-brandGray bg-white p-3 shadow-sm">
+                <div className="flex items-center gap-2 rounded-2xl border border-brandGray bg-white px-3 py-2 shadow-sm">
                   <Loader2 className="h-4 w-4 animate-spin text-cta" />
                   <span className="text-xs font-bold italic text-textMuted">Planning your move...</span>
                 </div>
@@ -153,7 +156,7 @@ const AIAssistant: React.FC = () => {
             )}
           </div>
 
-          <div className="border-t border-brandGray bg-white p-4">
+          <div className="border-t border-brandGray bg-white p-3 sm:p-4">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -161,16 +164,16 @@ const AIAssistant: React.FC = () => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Ask about packing or transport..."
-                className="flex-1 rounded-xl border border-brandGray bg-brandGray px-4 py-2 text-sm font-medium text-primary-900 focus:outline-none focus:ring-2 focus:ring-cta"
+                className="min-w-0 flex-1 rounded-xl border border-brandGray bg-brandGray px-3 py-2 text-[13px] font-medium text-primary-900 focus:outline-none focus:ring-2 focus:ring-cta sm:px-4 sm:text-sm"
                 disabled={isLoading}
               />
               <button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
-                className="flex-shrink-0 rounded-xl bg-cta p-2 text-primary-900 shadow-md transition-colors hover:bg-cta-hover disabled:opacity-50"
+                className="flex-shrink-0 rounded-xl bg-cta p-2.5 text-primary-900 shadow-md transition-colors hover:bg-cta-hover disabled:opacity-50 sm:p-2"
                 aria-label="Send message"
               >
-                <Send className="h-5 w-5" />
+                <Send className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
             </div>
           </div>
@@ -179,10 +182,10 @@ const AIAssistant: React.FC = () => {
 
       <button
         onClick={() => setOpen(v => !v)}
-        className="rounded-full border-2 border-white bg-primary-500 p-4 text-cta shadow-2xl transition-all hover:scale-110 active:scale-95"
+        className="rounded-full border-2 border-white bg-primary-500 p-3 text-cta shadow-2xl transition-all hover:scale-110 active:scale-95 sm:p-4"
         aria-label={open ? 'Close Assistant' : 'Open Assistant'}
       >
-        {open ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+        {open ? <X className="h-5 w-5 sm:h-6 sm:w-6" /> : <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />}
       </button>
     </div>
   );
