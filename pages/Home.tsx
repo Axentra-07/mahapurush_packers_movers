@@ -16,10 +16,10 @@ const Home: React.FC = () => {
 
   return (
     <div className="pt-24">
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#081b2d] via-[#0f2f4d] to-[#0b223a] text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#081b2d] via-[#0f2f4d] to-[#0b223a] text-white lg:min-h-[calc(100vh-6.5rem)] lg:flex lg:items-center">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.14),_transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(255,255,255,0.08),_transparent_30%)]" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-14 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 lg:py-14 lg:flex lg:items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-12 items-center">
             <div>
               <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold uppercase tracking-[0.2em] text-primary-100">
                 Trusted Packers in Ratnagiri
@@ -75,7 +75,7 @@ const Home: React.FC = () => {
                 <img
                   src="https://images.pexels.com/photos/4246106/pexels-photo-4246106.jpeg"
                   alt="Mahapurush Packers and Movers team handling household relocation"
-                  className="h-[320px] sm:h-[420px] lg:h-[520px] w-full object-cover"
+                  className="h-[300px] sm:h-[380px] lg:h-[400px] w-full object-cover"
                 />
               </div>
             </div>
